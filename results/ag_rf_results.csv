@@ -1,0 +1,2 @@
+experiment,evaluator_model,best_fitness,best_recall_validation,num_features_selected,total_features,reduction_pct,final_generation,best_generation_found,total_time_seconds,evaluations_requested,evaluations_computed,cache_hits,cache_hit_rate_pct
+AG-RF,Random Forest,0.8703339882121807,1.0,440,1018,56.777996070726914,39,29,284.14340187500056,1950,1321,629,32.256410256410255
