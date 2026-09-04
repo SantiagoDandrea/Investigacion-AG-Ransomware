@@ -1,6 +1,6 @@
 # Optimización de la Selección de Características para la Detección de Ransomware mediante Algoritmos Genéticos
 
-## Proyecto de investigación universitario enfocado en evaluar si un **Algoritmo Genético (AG)** puede seleccionar automáticamente un subconjunto reducido de características estáticas extraídas de los primeros 1024 bytes del **PE Header (Portable Executable)** de Windows, manteniendo una capacidad de detección de ransomware comparable a la obtenida utilizando todas las características, y evaluando el impacto sobre el costo computacional.
+Proyecto de investigación universitario enfocado en evaluar si un **Algoritmo Genético (AG)** puede seleccionar automáticamente un subconjunto reducido de características estáticas extraídas de los primeros 1024 bytes del **PE Header (Portable Executable)** de Windows, manteniendo una capacidad de detección de ransomware comparable a la obtenida utilizando todas las características, y evaluando el impacto sobre el costo computacional.
 
 ## 1. Estructura del Dataset
 
