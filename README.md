@@ -37,7 +37,7 @@ Para evitar fugas de información, el conjunto de datos se divide de forma estra
 
 ## 3. Modelos de aprendizaje automático e hiperparámetros fijos
 
-No se realiza optimización de hiperparámetros (Grid Search, Bayesian Search, etc.), manteniéndose fijos en todas las etapas:
+No se realiza optimización de hiperparámetros , manteniéndose fijos en todas las etapas:
 | Modelo | Hiperparámetros | Rol en el Proyecto |
 | :--- | :--- | :--- |
 | **Decision Tree (DT)** | `criterion="gini"`, `random_state=42` | Evaluador de fitness en **AG-DT** y modelo de evaluación final. |
@@ -53,3 +53,114 @@ El AG busca un subconjunto óptimo de características maximizando el recall de 
 - **Representación**: Cromosoma binario de longitud $N_{total} = 1018$.
   - `1`: Característica seleccionada.
   - `0`: Característica descartada.
+
+### Parámetros utilizados
+
+- Tamaño de la población: `50` individuos.
+- Número máximo de generaciones: `50`.
+- Límite de estancamiento: `10` generaciones sin mejora.
+- Tamaño del torneo: `3` individuos.
+- Probabilidad de cruce: `0.8`.
+- Probabilidad de mutación: `1 / (2.5 * N_total)`.
+- Semilla aleatoria: `42`, para facilitar la reproducibilidad.
+
+En cada generación, el algoritmo evalúa los cromosomas, conserva el mejor individuo y crea una nueva población mediante selección por torneo, cruce y mutación. La función de aptitud combina el recall de ransomware obtenido en validación con la reducción de características:
+
+$$
+aptitud = 0.7 \cdot recall + 0.3 \cdot reduccion
+$$
+
+## 5. ¿Qué hace el código?
+
+El flujo principal se encuentra en `src/main.py` y sigue estas etapas:
+
+1. Carga el archivo `data/encabezados_ransomware.csv` y comprueba que existan las columnas de metadatos y las 1024 características esperadas.
+2. Separa la variable objetivo (`objetivo`) de las características y excluye los metadatos (`identificador`, `nombre_archivo` y `familia`).
+3. Elimina las características constantes y divide los datos de forma estratificada en entrenamiento, validación y prueba.
+4. Calcula una evaluación de referencia utilizando todas las características.
+5. Ejecuta un algoritmo genético con un árbol de decisión (AG-DT).
+6. Ejecuta otro algoritmo genético con un bosque aleatorio (AG-RF).
+7. Evalúa en el conjunto de prueba los subconjuntos encontrados por ambos algoritmos y los compara con el conjunto completo de características.
+8. Guarda los resultados y genera una gráfica de convergencia.
+
+Durante la optimización, el conjunto de prueba permanece aislado. Solo se utiliza al final para medir el rendimiento de los modelos y evitar que influya en la selección de características.
+
+## 6. Estructura del proyecto
+
+```text
+Investigacion-AG-Ransomware/
+├── data/
+│   └── encabezados_ransomware.csv
+├── results/
+│   └── Resultados generados por el programa
+├── src/
+│   ├── algoritmo_genetico.py       # Selección, cruce, mutación y evolución
+│   ├── aptitud.py                  # Evaluación de aptitud y caché
+│   ├── cargador_datos.py           # Lectura y validación del CSV
+│   ├── evaluacion.py               # Evaluación de referencia y evaluación final
+│   ├── modelos.py                  # Árbol, bosque aleatorio y XGBoost
+│   ├── preprocesamiento.py         # Limpieza y división de los datos
+│   └── main.py                     # Punto de entrada del proyecto
+├── requirements.txt
+└── README.md
+```
+
+### Descripción de los módulos principales
+
+- `cargador_datos.py`: carga el dataset y valida su estructura.
+- `preprocesamiento.py`: prepara las características, elimina columnas constantes y realiza la división estratificada.
+- `modelos.py`: define los clasificadores utilizados en la investigación.
+- `aptitud.py`: entrena el modelo correspondiente para cada cromosoma, calcula el recall, la reducción y la aptitud. También utiliza una caché para evitar repetir evaluaciones.
+- `algoritmo_genetico.py`: implementa la población, selección por torneo, cruce, mutación, elitismo y criterios de parada.
+- `evaluacion.py`: calcula la evaluación de referencia y la comparación final sobre datos de prueba.
+- `main.py`: coordina todo el experimento y guarda los archivos de salida.
+
+## 7. Instalación
+
+Se recomienda utilizar Python 3.10 o una versión posterior y un entorno virtual. Desde PowerShell, situado en la carpeta raíz del proyecto, ejecuta:
+
+```powershell
+python -m venv .venv
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+Si el entorno virtual ya existe, basta con activarlo:
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned
+.\.venv\Scripts\Activate.ps1
+```
+
+## 8. Ejecución
+
+Con el entorno virtual activado, ejecuta:
+
+```powershell
+python -m src.main
+```
+
+También puedes ejecutar el programa directamente usando el intérprete del entorno virtual:
+
+```powershell
+.\.venv\Scripts\python.exe -m src.main
+```
+
+El programa debe ejecutarse desde la carpeta raíz del proyecto para que encuentre correctamente `data/encabezados_ransomware.csv` y la carpeta `results/`. La ejecución puede tardar varios minutos, ya que se entrenan numerosos modelos durante las generaciones de ambos algoritmos genéticos.
+
+## 9. Archivos generados
+
+Al finalizar, la carpeta `results/` contiene, entre otros, los siguientes archivos:
+
+- `resultados_referencia.csv`: rendimiento utilizando todas las características.
+- `historial_ag_dt.csv` y `historial_ag_rf.csv`: evolución de la aptitud por generación.
+- `caracteristicas_seleccionadas_ag_dt.csv` y `caracteristicas_seleccionadas_ag_rf.csv`: características elegidas por cada AG.
+- `resultados_ag_dt.csv` y `resultados_ag_rf.csv`: resumen de cada experimento genético.
+- `resultados_finales.csv`: comparación final de los modelos y subconjuntos evaluados.
+- `convergence_comparison.png`: gráfica de convergencia de AG-DT y AG-RF.
+
+## 10. Interpretación general
+
+El objetivo no es únicamente obtener el mayor recall posible, sino encontrar un equilibrio entre detectar correctamente el ransomware y utilizar menos características. Una reducción alta con un recall similar al de la referencia indica que el algoritmo genético encontró un subconjunto compacto con un rendimiento comparable. La evaluación final sobre el conjunto de prueba permite comprobar si ese resultado se mantiene con datos que no participaron durante la optimización.

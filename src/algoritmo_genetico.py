@@ -9,188 +9,185 @@ class AlgoritmoGenetico:
     
     def __init__(
         self,
-        n_total: int,
-        pop_size: int = 50,
-        max_generations: int = 50,
-        stagnation_limit: int = 10,
-        tournament_size: int = 3,
-        crossover_prob: float = 0.8,
-        random_state: int = 42
+        total_caracteristicas: int,
+        tamano_poblacion: int = 50,
+        max_generaciones: int = 50,
+        limite_estancamiento: int = 10,
+        tamano_torneo: int = 3,
+        probabilidad_cruce: float = 0.8,
+        semilla_aleatoria: int = 42
     ):
         
-        self.n_total = n_total
-        self.pop_size = pop_size
-        self.max_generations = max_generations
-        self.stagnation_limit = stagnation_limit
-        self.tournament_size = tournament_size
-        self.crossover_prob = crossover_prob
-        self.random_state = random_state
-        self.mutation_prob = 1.0 / (2.5 * float(self.n_total))
-        self.rng = np.random.default_rng(seed=self.random_state)
+        self.total_caracteristicas = total_caracteristicas
+        self.tamano_poblacion = tamano_poblacion
+        self.max_generaciones = max_generaciones
+        self.limite_estancamiento = limite_estancamiento
+        self.tamano_torneo = tamano_torneo
+        self.probabilidad_cruce = probabilidad_cruce
+        self.semilla_aleatoria = semilla_aleatoria
+        self.probabilidad_mutacion = 1.0 / (2.5 * float(self.total_caracteristicas))
+        self.generador_aleatorio = np.random.default_rng(seed=self.semilla_aleatoria)
 
     def inicializar_poblacion(self) -> np.ndarray:
-        population = self.rng.integers(0, 2, size=(self.pop_size, self.n_total), dtype=np.int8)
-        for i in range(self.pop_size):
-            if np.sum(population[i]) == 0:
-                random_gene = self.rng.integers(0, self.n_total)
-                population[i, random_gene] = 1
+        poblacion = self.generador_aleatorio.integers(0, 2, size=(self.tamano_poblacion, self.total_caracteristicas), dtype=np.int8)
+        for indice in range(self.tamano_poblacion):
+            if np.sum(poblacion[indice]) == 0:
+                gen_aleatorio = self.generador_aleatorio.integers(0, self.total_caracteristicas)
+                poblacion[indice, gen_aleatorio] = 1
                 
-        return population
+        return poblacion
 
-    def seleccion_torneo(self, population: np.ndarray, fitness_scores: np.ndarray) -> np.ndarray:
+    def seleccion_torneo(self, poblacion: np.ndarray, puntuaciones_aptitud: np.ndarray) -> np.ndarray:
         
-        selected_indices = self.rng.choice(self.pop_size, size=self.tournament_size, replace=True)
-        best_index = selected_indices[np.argmax(fitness_scores[selected_indices])]
-        return np.copy(population[best_index])
+        indices_seleccionados = self.generador_aleatorio.choice(self.tamano_poblacion, size=self.tamano_torneo, replace=True)
+        mejor_indice = indices_seleccionados[np.argmax(puntuaciones_aptitud[indices_seleccionados])]
+        return np.copy(poblacion[mejor_indice])
 
-    def cruzar(self, parent1: np.ndarray, parent2: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
+    def cruzar(self, progenitor_1: np.ndarray, progenitor_2: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         
-        if self.rng.random() < self.crossover_prob:
-            cut_point = self.rng.integers(1, self.n_total)
-            child1 = np.concatenate([parent1[:cut_point], parent2[cut_point:]])
-            child2 = np.concatenate([parent2[:cut_point], parent1[cut_point:]])
-            return child1, child2
+        if self.generador_aleatorio.random() < self.probabilidad_cruce:
+            punto_corte = self.generador_aleatorio.integers(1, self.total_caracteristicas)
+            descendiente_1 = np.concatenate([progenitor_1[:punto_corte], progenitor_2[punto_corte:]])
+            descendiente_2 = np.concatenate([progenitor_2[:punto_corte], progenitor_1[punto_corte:]])
+            return descendiente_1, descendiente_2
         else:
-            return np.copy(parent1), np.copy(parent2)
+            return np.copy(progenitor_1), np.copy(progenitor_2)
 
-    def mutar(self, chromosome: np.ndarray) -> np.ndarray:
+    def mutar(self, cromosoma: np.ndarray) -> np.ndarray:
         
-        mutated = np.copy(chromosome)
-        mutation_mask = self.rng.random(size=self.n_total) < self.mutation_prob
-        mutated[mutation_mask] = 1 - mutated[mutation_mask]
-        if np.sum(mutated) == 0:
-            forced_gene = self.rng.integers(0, self.n_total)
-            mutated[forced_gene] = 1
+        mutado = np.copy(cromosoma)
+        mascara_mutacion = self.generador_aleatorio.random(size=self.total_caracteristicas) < self.probabilidad_mutacion
+        mutado[mascara_mutacion] = 1 - mutado[mascara_mutacion]
+        if np.sum(mutado) == 0:
+            gen_forzado = self.generador_aleatorio.integers(0, self.total_caracteristicas)
+            mutado[gen_forzado] = 1
             
-        return mutated
+        return mutado
 
-    def ejecutar(self, evaluator: EvaluadorAptitud, experiment_name: str = "AG") -> Dict[str, Any]:
+    def ejecutar(self, evaluador: EvaluadorAptitud, nombre_experimento: str = "AG") -> Dict[str, Any]:
         
         print("\n" + "=" * 60)
-        print(f"INICIO DEL ALGORITMO GENÉTICO: {experiment_name}")
-        print(f"Parámetros: Población={self.pop_size}, MaxGen={self.max_generations}, "
-              f"Estancamiento={self.stagnation_limit}, Torneo={self.tournament_size}, "
-              f"Pc={self.crossover_prob}, Pm={self.mutation_prob:.7f} (1 / 2.5*{self.n_total})")
+        print(f"INICIO DEL ALGORITMO GENÉTICO: {nombre_experimento}")
+        print(f"Parámetros: Población={self.tamano_poblacion}, MaxGen={self.max_generaciones}, Estancamiento={self.limite_estancamiento}, Torneo={self.tamano_torneo}, Pc={self.probabilidad_cruce}, Pm={self.probabilidad_mutacion:.7f} (1 / 2.5*{self.total_caracteristicas})")
         print("=" * 60)
         
-        start_time = time.perf_counter()
-        population = self.inicializar_poblacion()
+        tiempo_inicio = time.perf_counter()
+        poblacion = self.inicializar_poblacion()
         
-        history: List[Dict[str, Any]] = []
+        historial: List[Dict[str, Any]] = []
         
-        best_fitness_overall = -1.0
-        best_chromosome_overall = None
-        best_recall_overall = 0.0
-        best_reduction_overall = 0.0
-        best_num_features_overall = 0
-        best_generation_found = 0
+        mejor_aptitud_global = -1.0
+        mejor_cromosoma_global = None
+        mejor_recall_global = 0.0
+        mejor_reduccion_global = 0.0
+        mejor_num_caracteristicas_global = 0
+        mejor_generacion_encontrada = 0
         
-        stagnant_generations = 0
-        for gen in range(1, self.max_generations + 1):
-            gen_start_time = time.perf_counter()
-            fitness_scores = np.zeros(self.pop_size, dtype=float)
-            recalls = np.zeros(self.pop_size, dtype=float)
-            reductions = np.zeros(self.pop_size, dtype=float)
-            num_features = np.zeros(self.pop_size, dtype=int)
+        generaciones_estancadas = 0
+        for generacion in range(1, self.max_generaciones + 1):
+            inicio_generacion = time.perf_counter()
+            puntuaciones_aptitud = np.zeros(self.tamano_poblacion, dtype=float)
+            recuperaciones = np.zeros(self.tamano_poblacion, dtype=float)
+            reducciones = np.zeros(self.tamano_poblacion, dtype=float)
+            cantidad_caracteristicas = np.zeros(self.tamano_poblacion, dtype=int)
             
-            for i in range(self.pop_size):
-                fit, rec, red, n_feats = evaluator.evaluar(population[i])
-                fitness_scores[i] = fit
-                recalls[i] = rec
-                reductions[i] = red
-                num_features[i] = n_feats
-            best_idx = int(np.argmax(fitness_scores))
-            worst_idx = int(np.argmin(fitness_scores))
+            for indice in range(self.tamano_poblacion):
+                aptitud, recall, reduccion, cantidad = evaluador.evaluar(poblacion[indice])
+                puntuaciones_aptitud[indice] = aptitud
+                recuperaciones[indice] = recall
+                reducciones[indice] = reduccion
+                cantidad_caracteristicas[indice] = cantidad
+            mejor_indice = int(np.argmax(puntuaciones_aptitud))
+            peor_indice = int(np.argmin(puntuaciones_aptitud))
             
-            gen_best_fitness = fitness_scores[best_idx]
-            gen_avg_fitness = float(np.mean(fitness_scores))
-            gen_worst_fitness = fitness_scores[worst_idx]
-            gen_best_recall = recalls[best_idx]
-            gen_best_reduction = reductions[best_idx]
-            gen_best_n_feats = num_features[best_idx]
-            log_entry = {
-                "generacion": gen,
-                "mejor_aptitud": gen_best_fitness,
-                "aptitud_promedio": gen_avg_fitness,
-                "peor_aptitud": gen_worst_fitness,
-                "mejor_recall": gen_best_recall,
-                "mejor_num_caracteristicas": gen_best_n_feats,
-                "mejor_reduccion": gen_best_reduction
+            mejor_aptitud_generacion = puntuaciones_aptitud[mejor_indice]
+            aptitud_promedio_generacion = float(np.mean(puntuaciones_aptitud))
+            peor_aptitud_generacion = puntuaciones_aptitud[peor_indice]
+            mejor_recall_generacion = recuperaciones[mejor_indice]
+            mejor_reduccion_generacion = reducciones[mejor_indice]
+            mejor_cantidad_generacion = cantidad_caracteristicas[mejor_indice]
+            entrada_historial = {
+                "generacion": generacion,
+                "mejor_aptitud": mejor_aptitud_generacion,
+                "aptitud_promedio": aptitud_promedio_generacion,
+                "peor_aptitud": peor_aptitud_generacion,
+                "mejor_recall": mejor_recall_generacion,
+                "mejor_num_caracteristicas": mejor_cantidad_generacion,
+                "mejor_reduccion": mejor_reduccion_generacion
             }
-            history.append(log_entry)
+            historial.append(entrada_historial)
             
-            gen_duration = time.perf_counter() - gen_start_time
+            duracion_generacion = time.perf_counter() - inicio_generacion
             print(
-                f"[{experiment_name}] Gen {gen:02d}/{self.max_generations} | "
-                f"Mejor aptitud: {gen_best_fitness:.5f} | Aptitud promedio: {gen_avg_fitness:.5f} | "
-                f"Peor aptitud: {gen_worst_fitness:.5f} | Mejor recall: {gen_best_recall:.4f} | "
-                f"Características: {gen_best_n_feats}/{self.n_total} ({gen_best_reduction*100:.1f}% reducción) | "
-                f"Tiempo: {gen_duration:.1f}s"
+                f"[{nombre_experimento}] Generación {generacion:02d}/{self.max_generaciones} | "
+                f"Mejor aptitud: {mejor_aptitud_generacion:.5f} | Aptitud promedio: {aptitud_promedio_generacion:.5f} | "
+                f"Peor aptitud: {peor_aptitud_generacion:.5f} | Mejor recuperación: {mejor_recall_generacion:.4f} | "
+                f"Características: {mejor_cantidad_generacion}/{self.total_caracteristicas} ({mejor_reduccion_generacion*100:.1f}% reducción) | "
+                f"Tiempo: {duracion_generacion:.1f}s"
             )
-            if gen_best_fitness > best_fitness_overall:
-                best_fitness_overall = gen_best_fitness
-                best_chromosome_overall = np.copy(population[best_idx])
-                best_recall_overall = gen_best_recall
-                best_reduction_overall = gen_best_reduction
-                best_num_features_overall = gen_best_n_feats
-                best_generation_found = gen
-                stagnant_generations = 0
+            if mejor_aptitud_generacion > mejor_aptitud_global:
+                mejor_aptitud_global = mejor_aptitud_generacion
+                mejor_cromosoma_global = np.copy(poblacion[mejor_indice])
+                mejor_recall_global = mejor_recall_generacion
+                mejor_reduccion_global = mejor_reduccion_generacion
+                mejor_num_caracteristicas_global = mejor_cantidad_generacion
+                mejor_generacion_encontrada = generacion
+                generaciones_estancadas = 0
             else:
-                stagnant_generations += 1
-            if stagnant_generations >= self.stagnation_limit:
+                generaciones_estancadas += 1
+            if generaciones_estancadas >= self.limite_estancamiento:
                 print(
-                    f"\n[{experiment_name}] CRITERIO DE PARADA ALCANZADO: "
-                    f"Estancamiento durante {self.stagnation_limit} generaciones consecutivas (Gen {gen})."
+                    f"\n[{nombre_experimento}] CRITERIO DE PARADA ALCANZADO: "
+                    f"Estancamiento durante {self.limite_estancamiento} generaciones consecutivas (Generación {generacion})."
                 )
                 break
-            if gen == self.max_generations:
-                print(f"\n[{experiment_name}] CRITERIO DE PARADA ALCANZADO: Máximo de {self.max_generations} generaciones.")
+            if generacion == self.max_generaciones:
+                print(f"\n[{nombre_experimento}] CRITERIO DE PARADA ALCANZADO: Máximo de {self.max_generaciones} generaciones.")
                 break
-            elite_individual = np.copy(population[best_idx])
+            individuo_destacado = np.copy(poblacion[mejor_indice])
             
-            new_population = [elite_individual]
-            offspring_needed = self.pop_size - 1
-            while len(new_population) < self.pop_size:
-                parent1 = self.seleccion_torneo(population, fitness_scores)
-                parent2 = self.seleccion_torneo(population, fitness_scores)
-                child1, child2 = self.cruzar(parent1, parent2)
-                child1 = self.mutar(child1)
-                child2 = self.mutar(child2)
+            nueva_poblacion = [individuo_destacado]
+            while len(nueva_poblacion) < self.tamano_poblacion:
+                progenitor_1 = self.seleccion_torneo(poblacion, puntuaciones_aptitud)
+                progenitor_2 = self.seleccion_torneo(poblacion, puntuaciones_aptitud)
+                descendiente_1, descendiente_2 = self.cruzar(progenitor_1, progenitor_2)
+                descendiente_1 = self.mutar(descendiente_1)
+                descendiente_2 = self.mutar(descendiente_2)
                 
-                new_population.append(child1)
-                if len(new_population) < self.pop_size:
-                    new_population.append(child2)
-            population = np.array(new_population, dtype=np.int8)
+                nueva_poblacion.append(descendiente_1)
+                if len(nueva_poblacion) < self.tamano_poblacion:
+                    nueva_poblacion.append(descendiente_2)
+            poblacion = np.array(nueva_poblacion, dtype=np.int8)
             
-        total_ag_time = time.perf_counter() - start_time
-        history_df = pd.DataFrame(history)
-        cache_stats = evaluator.obtener_estadisticas_cache()
+        tiempo_total = time.perf_counter() - tiempo_inicio
+        historial_df = pd.DataFrame(historial)
+        estadisticas_cache = evaluador.obtener_estadisticas_cache()
         
         print("-" * 60)
-        print(f"FINALIZÓ {experiment_name}:")
-        print(f" - Tiempo total de ejecución del AG: {total_ag_time:.2f} segundos ({total_ag_time/60:.2f} min)")
-        print(f" - Generación final alcanzada: {history_df['generacion'].iloc[-1]}")
-        print(f" - Mejor generación encontrada: Gen {best_generation_found}")
-        print(f" - Mejor aptitud: {best_fitness_overall:.5f}")
-        print(f" - Características seleccionadas: {best_num_features_overall} de {self.n_total}")
-        print(f" - Porcentaje de reducción: {best_reduction_overall*100:.2f}%")
-        print(f" - Recall GR=1 (Validación): {best_recall_overall:.4f}")
-        print(f" - Estadísticas de la caché: {cache_stats['evaluations_requested']} solicitadas, "
-              f"{cache_stats['evaluations_computed']} calculadas, "
-              f"{cache_stats['cache_hits']} recuperadas de caché "
-              f"({cache_stats['cache_hit_rate_pct']:.1f}% ahorro)")
+        print(f"FINALIZÓ {nombre_experimento}:")
+        print(f" - Tiempo total de ejecución del AG: {tiempo_total:.2f} segundos ({tiempo_total/60:.2f} min)")
+        print(f" - Generación final alcanzada: {historial_df['generacion'].iloc[-1]}")
+        print(f" - Mejor generación encontrada: {mejor_generacion_encontrada}")
+        print(f" - Mejor aptitud: {mejor_aptitud_global:.5f}")
+        print(f" - Características seleccionadas: {mejor_num_caracteristicas_global} de {self.total_caracteristicas}")
+        print(f" - Porcentaje de reducción: {mejor_reduccion_global*100:.2f}%")
+        print(f" - Recuperación GR=1 (Validación): {mejor_recall_global:.4f}")
+        print(f" - Estadísticas de la caché: {estadisticas_cache['evaluations_requested']} solicitadas, "
+            f"{estadisticas_cache['evaluations_computed']} calculadas, "
+            f"{estadisticas_cache['cache_hits']} recuperadas de caché "
+            f"({estadisticas_cache['cache_hit_rate_pct']:.1f}% ahorro)")
         print("=" * 60 + "\n")
         
         return {
-            "nombre_experimento": experiment_name,
-            "mejor_cromosoma": best_chromosome_overall,
-            "mejor_aptitud": best_fitness_overall,
-            "mejor_recall": best_recall_overall,
-            "mejor_reduccion": best_reduction_overall,
-            "mejor_num_caracteristicas": best_num_features_overall,
-            "generacion_final": int(history_df["generacion"].iloc[-1]),
-            "mejor_generacion_encontrada": best_generation_found,
-            "historial": history_df,
-            "estadisticas_cache": cache_stats,
-            "tiempo_total_segundos": total_ag_time
+            "nombre_experimento": nombre_experimento,
+            "mejor_cromosoma": mejor_cromosoma_global,
+            "mejor_aptitud": mejor_aptitud_global,
+            "mejor_recall": mejor_recall_global,
+            "mejor_reduccion": mejor_reduccion_global,
+            "mejor_num_caracteristicas": mejor_num_caracteristicas_global,
+            "generacion_final": int(historial_df["generacion"].iloc[-1]),
+            "mejor_generacion_encontrada": mejor_generacion_encontrada,
+            "historial": historial_df,
+            "estadisticas_cache": estadisticas_cache,
+            "tiempo_total_segundos": tiempo_total
         }

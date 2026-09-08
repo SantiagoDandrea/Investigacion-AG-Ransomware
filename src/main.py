@@ -93,16 +93,16 @@ def main():
     )
     
     ag_dt = AlgoritmoGenetico(
-        n_total=n_total,
-        pop_size=50,
-        max_generations=50,
-        stagnation_limit=10,
-        tournament_size=3,
-        crossover_prob=0.8,
-        random_state=RANDOM_STATE
+        total_caracteristicas=n_total,
+        tamano_poblacion=50,
+        max_generaciones=50,
+        limite_estancamiento=10,
+        tamano_torneo=3,
+        probabilidad_cruce=0.8,
+        semilla_aleatoria=RANDOM_STATE
     )
     
-    res_ag_dt = ag_dt.ejecutar(evaluator=evaluator_dt, experiment_name="AG-DT")
+    res_ag_dt = ag_dt.ejecutar(evaluador=evaluator_dt, nombre_experimento="AG-DT")
     res_ag_dt["historial"].to_csv(os.path.join(results_dir, "historial_ag_dt.csv"), index=False)
     guardar_caracteristicas_seleccionadas(
         feature_names=active_features,
@@ -138,16 +138,16 @@ def main():
     )
     
     ag_rf = AlgoritmoGenetico(
-        n_total=n_total,
-        pop_size=50,
-        max_generations=50,
-        stagnation_limit=10,
-        tournament_size=3,
-        crossover_prob=0.8,
-        random_state=RANDOM_STATE
+        total_caracteristicas=n_total,
+        tamano_poblacion=50,
+        max_generaciones=50,
+        limite_estancamiento=10,
+        tamano_torneo=3,
+        probabilidad_cruce=0.8,
+        semilla_aleatoria=RANDOM_STATE
     )
     
-    res_ag_rf = ag_rf.ejecutar(evaluator=evaluator_rf, experiment_name="AG-RF")
+    res_ag_rf = ag_rf.ejecutar(evaluador=evaluator_rf, nombre_experimento="AG-RF")
     res_ag_rf["historial"].to_csv(os.path.join(results_dir, "historial_ag_rf.csv"), index=False)
     guardar_caracteristicas_seleccionadas(
         feature_names=active_features,
