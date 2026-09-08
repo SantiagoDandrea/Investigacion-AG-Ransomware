@@ -2,7 +2,7 @@
 
 Este documento resume **únicamente las decisiones y cambios realizados después de definir el marco teórico**, es decir, las decisiones que terminaron de darle forma a la implementación experimental.
 
-## 1. Cambio de dataset
+## 1. Cambio de conjunto de datos
 
 Se reemplazó el dataset que se había considerado inicialmente por:
 
@@ -17,7 +17,7 @@ El dataset terminó teniendo **1024 características originales**, de las cuales
 Un punto importante que se decidió durante el diseño es que **N nunca debe estar hardcodeado**. El número de genes del cromosoma se obtiene dinámicamente después del preprocesamiento:
 
 ```text
-N = cantidad de features después de la limpieza
+N = cantidad de características después de la limpieza
 ```
 
 Por lo tanto, si en el futuro se eliminan más características constantes, el algoritmo se adapta automáticamente.
@@ -84,18 +84,18 @@ Por lo tanto:
 
 ---
 
-## 4. Fitness
+## 4. Aptitud
 
 Se estableció definitivamente la función:
 
 $$
-Fitness = 0.7 \times Recall + 0.3 \times Reduction
+Aptitud = 0.7 \times Recall + 0.3 \times Reducción
 $$
 
 donde:
 
 * **Recall** representa el porcentaje de los ransomware reales fueron identificados como ransomware.
-* **Reduction** representa la proporción de características eliminadas.
+* **Reducción** representa la proporción de características eliminadas.
 
 La prioridad es deliberada:
 
@@ -108,14 +108,14 @@ Esto refleja el objetivo del proyecto: **reducir características sin sacrificar
 
 ---
 
-## 5. Validación y Test
+## 5. Validación y prueba
 
 Se decidió separar claramente la optimización de la evaluación final:
 
 ```text
-Train
+Entrenamiento
    +
-Validation
+Validación
    ↓
 Optimización del AG
 ```
@@ -123,12 +123,12 @@ Optimización del AG
 y:
 
 ```text
-Test
+Prueba
 ↓
 Evaluación final
 ```
 
-El **Test nunca participa en el cálculo del fitness ni en la selección del individuo**.
+El conjunto de **prueba nunca participa en el cálculo de la aptitud ni en la selección del individuo**.
 
 Esto permite comparar posteriormente los subconjuntos seleccionados contra el baseline utilizando datos que permanecieron aislados durante la optimización.
 
@@ -265,7 +265,7 @@ AG-RF ───────┼── Random Forest
              └── XGBoost
 ```
 
-Además, se mantiene un **Baseline**, entrenando los mismos modelos utilizando las 1018 características.
+Además, se mantiene una **referencia**, entrenando los mismos modelos utilizando las 1018 características.
 
 La comparación permite determinar:
 

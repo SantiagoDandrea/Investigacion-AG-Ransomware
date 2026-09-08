@@ -1,0 +1,2 @@
+experimento,modelo_evaluador,mejor_aptitud,mejor_recall_validacion,numero_caracteristicas_seleccionadas,total_caracteristicas,reduccion_porcentaje,generacion_final,mejor_generacion_encontrada,tiempo_total_segundos,evaluaciones_solicitadas,evaluaciones_calculadas,aciertos_cache,porcentaje_aciertos_cache
+AG-DT,Arbol de decision,0.8732809430255403,1.0,430,1018,57.760314341846765,50,50,176.95778700000028,2500,1574,926,37.04

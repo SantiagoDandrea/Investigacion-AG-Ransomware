@@ -1,2 +1,0 @@
-experiment,evaluator_model,best_fitness,best_recall_validation,num_features_selected,total_features,reduction_pct,final_generation,best_generation_found,total_time_seconds,evaluations_requested,evaluations_computed,cache_hits,cache_hit_rate_pct
-AG-DT,Decision Tree,0.8732809430255403,1.0,430,1018,57.760314341846765,50,50,111.90292353599943,2500,1574,926,37.04

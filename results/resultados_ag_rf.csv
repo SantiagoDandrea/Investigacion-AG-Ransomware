@@ -1,0 +1,2 @@
+experimento,modelo_evaluador,mejor_aptitud,mejor_recall_validacion,numero_caracteristicas_seleccionadas,total_caracteristicas,reduccion_porcentaje,generacion_final,mejor_generacion_encontrada,tiempo_total_segundos,evaluaciones_solicitadas,evaluaciones_calculadas,aciertos_cache,porcentaje_aciertos_cache
+AG-RF,Random Forest,0.8703339882121807,1.0,440,1018,56.777996070726914,39,29,484.2882642000004,1950,1321,629,32.256410256410255
